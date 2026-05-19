@@ -1,13 +1,19 @@
+# app.py
+# ==========================================
+# WOMEN SAFETY APP 🚨
+# Streamlit Hackathon Project
+# ==========================================
+
 import streamlit as st
+import requests
+import webbrowser
 import random
 import time
-import smtplib
-from email.mime.text import MIMEText
-from streamlit_js_eval import streamlit_js_eval
+from datetime import datetime
 
-# ==========================
+# ==========================================
 # PAGE CONFIG
-# ==========================
+# ==========================================
 
 st.set_page_config(
     page_title="Women Safety App",
@@ -15,308 +21,261 @@ st.set_page_config(
     layout="wide"
 )
 
-# ==========================
+# ==========================================
 # CUSTOM CSS
-# ==========================
+# ==========================================
 
 st.markdown("""
 <style>
-
-.big-title{
-    text-align:center;
-    font-size:45px;
-    font-weight:bold;
-    color:red;
+.main {
+    background-color: #fff5f7;
 }
 
-.sos-btn button{
-    width:100%;
-    height:90px;
-    font-size:30px;
-    background:red !important;
-    color:white !important;
-    border-radius:20px;
+.stButton>button {
+    width: 100%;
+    border-radius: 10px;
+    height: 3em;
+    font-size: 18px;
+    font-weight: bold;
 }
 
-.card{
-    padding:20px;
-    border-radius:20px;
-    background:#fff5f5;
-    margin-bottom:15px;
+.sos-btn button {
+    background-color: red;
+    color: white;
 }
 
+.card {
+    padding: 20px;
+    border-radius: 15px;
+    background: white;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================
-# TITLE
-# ==========================
+# ==========================================
+# HEADER
+# ==========================================
 
-st.markdown(
-    '<p class="big-title">🚨 Women Safety App</p>',
-    unsafe_allow_html=True
-)
+st.title("🚨 Women Safety App")
+st.subheader("Your Personal Emergency Protection System")
 
-# ==========================
-# USER DETAILS
-# ==========================
+# ==========================================
+# SIDEBAR
+# ==========================================
 
-st.sidebar.header("👩 User Details")
+st.sidebar.title("⚙️ Settings")
 
-name = st.sidebar.text_input("Your Name")
+user_name = st.sidebar.text_input("Enter Your Name")
+phone = st.sidebar.text_input("Phone Number")
 
-email = st.sidebar.text_input("Emergency Email")
+contact1 = st.sidebar.text_input("Emergency Contact 1")
+contact2 = st.sidebar.text_input("Emergency Contact 2")
+contact3 = st.sidebar.text_input("Emergency Contact 3")
 
-phone = st.sidebar.text_input("Emergency WhatsApp Number")
+# ==========================================
+# LOCATION FUNCTION
+# ==========================================
 
-# ==========================
-# LIVE LOCATION
-# ==========================
-
-st.subheader("📍 Live Location")
-
-location = streamlit_js_eval(
-    js_expressions="""
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            return {
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude
-            }
-        }
-    )
-    """,
-    key="location"
-)
-
-lat = None
-lon = None
-
-if location:
-
-    lat = location["latitude"]
-    lon = location["longitude"]
-
-    st.success(f"Latitude: {lat}")
-    st.success(f"Longitude: {lon}")
-
-    maps = f"https://www.google.com/maps?q={lat},{lon}"
-
-    st.markdown(f"[📍 Open Google Maps]({maps})")
-
-else:
-    st.warning("Please allow location access.")
-
-# ==========================
-# EMAIL CONFIG
-# ==========================
-
-SENDER_EMAIL = "YOUR_EMAIL@gmail.com"
-SENDER_PASSWORD = "YOUR_APP_PASSWORD"
-
-# ==========================
-# SEND EMAIL
-# ==========================
-
-def send_email(message):
-
+def get_location():
     try:
+        response = requests.get("https://ipinfo.io/json")
+        data = response.json()
 
-        msg = MIMEText(message)
+        city = data.get("city", "Unknown")
+        region = data.get("region", "")
+        country = data.get("country", "")
+        loc = data.get("loc", "")
 
-        msg["Subject"] = "Emergency SOS Alert"
+        latitude, longitude = loc.split(",")
 
-        msg["From"] = SENDER_EMAIL
+        return city, region, country, latitude, longitude
 
-        msg["To"] = email
+    except:
+        return "Unknown", "", "", "0", "0"
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+# ==========================================
+# HOME DASHBOARD
+# ==========================================
 
-        server.starttls()
+col1, col2 = st.columns(2)
 
-        server.login(
-            SENDER_EMAIL,
-            SENDER_PASSWORD
-        )
-
-        server.sendmail(
-            SENDER_EMAIL,
-            email,
-            msg.as_string()
-        )
-
-        server.quit()
-
-        st.success("✅ Email Sent Successfully")
-
-    except Exception as e:
-
-        st.error(e)
-
-# ==========================
+# ==========================================
 # SOS BUTTON
-# ==========================
+# ==========================================
 
-st.subheader("🆘 Emergency SOS")
+with col1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-with st.container():
+    st.header("🚨 SOS Emergency")
 
-    st.markdown(
-        '<div class="sos-btn">',
-        unsafe_allow_html=True
+    if st.button("SEND SOS ALERT"):
+        city, region, country, lat, lon = get_location()
+
+        maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+
+        st.error("🚨 SOS ALERT ACTIVATED!")
+
+        st.success(f"""
+        Alert Sent Successfully!
+
+        👤 Name: {user_name}
+        📍 Location: {city}, {region}, {country}
+        📌 Coordinates: {lat}, {lon}
+        """)
+
+        st.markdown(f"""
+        ### Emergency Message Sent:
+        
+        HELP! I am in danger.
+        
+        Name: {user_name}
+        
+        My Live Location:
+        {maps_url}
+        
+        Time: {datetime.now()}
+        """)
+
+        st.balloons()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ==========================================
+# LIVE LOCATION
+# ==========================================
+
+with col2:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    st.header("📍 Live Location")
+
+    if st.button("GET CURRENT LOCATION"):
+
+        city, region, country, lat, lon = get_location()
+
+        st.success(f"""
+        📍 City: {city}
+        🌍 Region: {region}
+        🌎 Country: {country}
+        """)
+
+        maps_url = f"https://www.google.com/maps?q={lat},{lon}"
+
+        st.markdown(f"[Open in Google Maps]({maps_url})")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ==========================================
+# FAKE CALL FEATURE
+# ==========================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+st.header("📞 Fake Call Feature")
+
+fake_name = st.text_input("Fake Caller Name", "Mom")
+
+delay = st.slider("Call Delay (seconds)", 5, 30, 10)
+
+if st.button("START FAKE CALL"):
+
+    with st.spinner("Incoming call starting..."):
+        time.sleep(delay)
+
+    st.success(f"📞 Incoming Call from {fake_name}")
+
+    st.audio(
+        "https://www.soundjay.com/phone/telephone-ring-01a.mp3"
     )
 
-    if st.button("🚨 SEND SOS ALERT"):
+st.markdown('</div>', unsafe_allow_html=True)
 
-        if lat and lon:
+# ==========================================
+# AI STRESS DETECTION (SIMULATION)
+# ==========================================
 
-            emergency_message = f"""
-HELP! I am in danger.
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-Name: {name}
+st.header("🎙️ AI Voice Stress Detection")
 
-My Live Location:
-https://www.google.com/maps?q={lat},{lon}
+st.write("Click button to simulate stress detection.")
 
-Please help immediately.
-"""
+if st.button("ANALYZE VOICE"):
 
-            st.error("🚨 SOS ACTIVATED")
+    stress_level = random.randint(1, 100)
 
-            st.code(emergency_message)
+    st.progress(stress_level)
 
-            # SEND EMAIL
-            send_email(emergency_message)
+    if stress_level > 70:
+        st.error(f"⚠️ High Stress Detected! ({stress_level}%)")
+        st.warning("Emergency Alert Triggered!")
 
-            # WHATSAPP
-            whatsapp_link = f"https://wa.me/{phone}?text={emergency_message}"
-
-            st.markdown(
-                f"[📲 Send WhatsApp Alert]({whatsapp_link})"
-            )
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-# ==========================
-# FAKE CALL
-# ==========================
-
-st.subheader("📞 Fake Call")
-
-callers = [
-    "Mom",
-    "Police",
-    "Friend",
-    "Brother"
-]
-
-if st.button("📲 Receive Fake Call"):
-
-    st.info("Incoming Call...")
-
-    time.sleep(2)
-
-    st.success(
-        f"📞 Calling from {random.choice(callers)}"
-    )
-
-# ==========================
-# EMERGENCY SIREN
-# ==========================
-
-st.subheader("🚨 Emergency Siren")
-
-audio_file = open("siren.mp3", "rb")
-
-audio_bytes = audio_file.read()
-
-st.audio(audio_bytes)
-
-# ==========================
-# STRESS DETECTION
-# ==========================
-
-st.subheader("🎤 AI Stress Detection")
-
-stress = st.slider(
-    "Stress Level",
-    0,
-    100,
-    20
-)
-
-if st.button("Analyze Stress"):
-
-    if stress < 30:
-
-        st.success("✅ Calm Voice")
-
-    elif stress < 70:
-
-        st.warning("⚠ Moderate Stress")
+    elif stress_level > 40:
+        st.warning(f"😟 Moderate Stress Detected ({stress_level}%)")
 
     else:
+        st.success(f"😊 Normal Voice Detected ({stress_level}%)")
 
-        st.error("🚨 Panic Detected")
+st.markdown('</div>', unsafe_allow_html=True)
 
-# ==========================
-# NEARBY HELP
-# ==========================
+# ==========================================
+# NEARBY HELP CENTERS
+# ==========================================
 
-st.subheader("🏥 Nearby Help")
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-if lat and lon:
+st.header("🏥 Nearby Police & Hospitals")
 
-    police = f"https://www.google.com/maps/search/police+station/@{lat},{lon},15z"
+city, region, country, lat, lon = get_location()
 
-    hospital = f"https://www.google.com/maps/search/hospital/@{lat},{lon},15z"
+if st.button("FIND NEARBY HELP"):
 
-    col1, col2 = st.columns(2)
+    police_url = f"https://www.google.com/maps/search/police+station+near+me/"
+    hospital_url = f"https://www.google.com/maps/search/hospital+near+me/"
 
-    with col1:
+    st.success("Nearby Help Centers Found")
 
-        st.markdown(
-            f"[🚓 Nearby Police Stations]({police})"
-        )
+    st.markdown(f"[🚓 Find Police Stations]({police_url})")
+    st.markdown(f"[🏥 Find Hospitals]({hospital_url})")
 
-    with col2:
+st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown(
-            f"[🏥 Nearby Hospitals]({hospital})"
-        )
+# ==========================================
+# SMARTWATCH SECTION
+# ==========================================
 
-# ==========================
-# SAFETY TIPS
-# ==========================
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.subheader("🛡 Safety Tips")
+st.header("⌚ Smartwatch Integration")
 
-tips = [
-    "Share location with trusted people.",
-    "Avoid isolated areas.",
-    "Use SOS immediately in danger.",
-    "Keep emergency contacts ready.",
-    "Stay alert while travelling."
-]
+watch_status = st.selectbox(
+    "Smartwatch Status",
+    ["Disconnected", "Connected"]
+)
 
-for tip in tips:
+if watch_status == "Connected":
+    st.success("⌚ Smartwatch Connected Successfully")
 
-    st.markdown(
-        f"""
-        <div class="card">
-        ✅ {tip}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    if st.button("TRIGGER WATCH SOS"):
+        st.error("🚨 SOS Triggered from Smartwatch")
 
-# ==========================
+else:
+    st.warning("⌚ No Smartwatch Connected")
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ==========================================
 # FOOTER
-# ==========================
+# ==========================================
 
 st.markdown("---")
 
-st.caption("Made with ❤️ using Streamlit")
+st.markdown("""
+<center>
+Made with ❤️ for Women's Safety
+</center>
+""", unsafe_allow_html=True)
+
+
