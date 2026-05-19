@@ -1,2 +1,7 @@
 streamlit
 requests
+SpeechRecognition
+geopy
+folium
+streamlit-folium
+pyaudio
