@@ -1,15 +1,14 @@
 # ==========================================
-# WOMEN SAFETY APP - ADVANCED VERSION 🚨
-# Streamlit Deployment Ready
+# WOMEN SAFETY APP 🚨
+# Streamlit Advanced Version
+# Speech Recognition Removed
 # ==========================================
 
 import streamlit as st
 import requests
 import random
 import time
-import speech_recognition as sr
 from datetime import datetime
-from geopy.geocoders import Nominatim
 import folium
 from streamlit_folium import st_folium
 
@@ -29,6 +28,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+
 .main {
     background-color: #fff5f7;
 }
@@ -43,13 +43,14 @@ st.markdown("""
 
 .stButton>button {
     width: 100%;
-    border-radius: 10px;
     height: 3em;
+    border-radius: 10px;
     font-size: 18px;
     font-weight: bold;
-    background-color: #ff4b4b;
+    background-color: red;
     color: white;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,12 +67,9 @@ st.subheader("AI Powered Personal Safety System")
 
 st.sidebar.header("👤 User Details")
 
-name = st.sidebar.text_input("Your Name")
+name = st.sidebar.text_input("Enter Your Name")
 phone = st.sidebar.text_input("Phone Number")
-
-emergency_contact = st.sidebar.text_input(
-    "Emergency WhatsApp Number"
-)
+contact = st.sidebar.text_input("Emergency Contact Number")
 
 # ==========================================
 # LOCATION FUNCTION
@@ -85,14 +83,15 @@ def get_location():
 
         loc = data["loc"].split(",")
 
-        latitude = float(loc[0])
-        longitude = float(loc[1])
+        lat = float(loc[0])
+        lon = float(loc[1])
 
         city = data.get("city", "Unknown")
 
-        return latitude, longitude, city
+        return lat, lon, city
 
     except:
+
         return 12.9716, 77.5946, "Bangalore"
 
 # ==========================================
@@ -102,40 +101,40 @@ def get_location():
 lat, lon, city = get_location()
 
 # ==========================================
-# SOS SECTION
+# SOS ALERT
 # ==========================================
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.header("🚨 SOS EMERGENCY")
+st.header("🚨 Emergency SOS")
 
 if st.button("SEND SOS ALERT"):
 
     maps_link = f"https://www.google.com/maps?q={lat},{lon}"
 
-    st.error("🚨 EMERGENCY ALERT ACTIVATED")
+    st.error("🚨 SOS ALERT ACTIVATED")
 
     st.success(f"""
-    ALERT DETAILS
+    Emergency Alert Sent Successfully
     
     👤 Name: {name}
+    📞 Contact: {contact}
     📍 City: {city}
-    📌 Location: {lat}, {lon}
-    
-    Emergency contacts notified.
     """)
 
     st.markdown(f"""
-    ### Emergency Message
+    ### Emergency Details
     
     HELP! I am in danger.
     
-    My location:
+    📍 Live Location:
     {maps_link}
     
-    Time:
+    🕒 Time:
     {datetime.now()}
     """)
+
+    st.balloons()
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -145,75 +144,36 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.header("📸 Camera Evidence Capture")
+st.header("📸 Camera Evidence")
 
 camera = st.camera_input("Capture Emergency Evidence")
 
 if camera:
+
     st.success("📸 Evidence Captured Successfully")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# SECRET RECORDING
+# SECRET AUDIO RECORDING
 # ==========================================
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 st.header("🎤 Secret Audio Recording")
 
-if st.button("START SECRET RECORDING"):
+if st.button("START RECORDING"):
 
-    st.info("🎙️ Recording Started Silently")
+    st.info("🎙️ Recording Started Secretly")
 
     progress = st.progress(0)
 
     for i in range(100):
+
         time.sleep(0.02)
         progress.progress(i + 1)
 
-    st.success("✅ Recording Saved Successfully")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ==========================================
-# VOICE COMMAND
-# ==========================================
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-st.header("🎙️ Voice Command SOS")
-
-st.write("Supported Commands:")
-st.write("- Help me")
-st.write("- Emergency")
-st.write("- Save me")
-
-if st.button("START VOICE LISTENING"):
-
-    recognizer = sr.Recognizer()
-
-    try:
-        with sr.Microphone() as source:
-
-            st.info("🎤 Listening...")
-
-            audio = recognizer.listen(source, timeout=5)
-
-            text = recognizer.recognize_google(audio)
-
-            st.success(f"Detected Voice: {text}")
-
-            if (
-                "help" in text.lower()
-                or "emergency" in text.lower()
-                or "save me" in text.lower()
-            ):
-
-                st.error("🚨 SOS TRIGGERED BY VOICE COMMAND")
-
-    except:
-        st.warning("Voice not detected")
+    st.success("✅ Recording Saved")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -226,15 +186,13 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 st.header("🚶 Safe Walk Timer")
 
 minutes = st.slider(
-    "Set Safe Walk Duration (minutes)",
+    "Set Walk Duration (Minutes)",
     1,
     60,
     5
 )
 
 if st.button("START SAFE WALK"):
-
-    st.info("⏳ Safe Walk Timer Started")
 
     countdown = st.empty()
 
@@ -249,7 +207,8 @@ if st.button("START SAFE WALK"):
 
         time.sleep(1)
 
-    st.error("🚨 Time Expired - SOS ALERT ACTIVATED")
+    st.error("🚨 Safe Walk Timer Expired")
+    st.warning("Emergency SOS Triggered")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -266,18 +225,18 @@ m = folium.Map(
     zoom_start=12
 )
 
-# User Location
+# User Location Marker
 folium.Marker(
     [lat, lon],
     tooltip="Your Location",
-    popup="Safe Location"
+    popup="Current Safe Location"
 ).add_to(m)
 
 # Simulated Crime Zones
 crime_zones = [
     [lat + 0.01, lon + 0.01],
-    [lat - 0.02, lon + 0.01],
-    [lat + 0.02, lon - 0.01]
+    [lat - 0.02, lon + 0.02],
+    [lat + 0.015, lon - 0.015]
 ]
 
 for zone in crime_zones:
@@ -292,41 +251,41 @@ for zone in crime_zones:
 
 st_folium(m, width=700)
 
-st.warning("⚠️ Red zones indicate unsafe areas")
+st.warning("⚠️ Red areas indicate unsafe zones")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# REAL AI STRESS DETECTION
+# AI STRESS DETECTION
 # ==========================================
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 st.header("🧠 AI Stress Detection")
 
-st.write("AI analyzes emotional stress levels")
+st.write("Analyze emotional stress levels")
 
-if st.button("ANALYZE STRESS"):
+if st.button("ANALYZE STRESS LEVEL"):
 
-    stress_score = random.randint(1, 100)
+    stress = random.randint(1, 100)
 
-    st.progress(stress_score)
+    st.progress(stress)
 
-    if stress_score > 75:
+    if stress > 75:
 
         st.error(f"""
         🚨 HIGH STRESS DETECTED
         
-        Stress Level: {stress_score}%
-        Emergency protocol activated.
+        Stress Level: {stress}%
+        Emergency Action Suggested
         """)
 
-    elif stress_score > 45:
+    elif stress > 40:
 
         st.warning(f"""
         ⚠️ Moderate Stress
         
-        Stress Level: {stress_score}%
+        Stress Level: {stress}%
         """)
 
     else:
@@ -334,13 +293,13 @@ if st.button("ANALYZE STRESS"):
         st.success(f"""
         😊 Safe Emotional State
         
-        Stress Level: {stress_score}%
+        Stress Level: {stress}%
         """)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# LIVE LOCATION MAP
+# LIVE LOCATION
 # ==========================================
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -348,15 +307,35 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 st.header("📍 Live Location")
 
 st.success(f"""
-Current Location:
-📍 {city}
+📍 Current City: {city}
+
 Latitude: {lat}
 Longitude: {lon}
 """)
 
-maps_link = f"https://www.google.com/maps?q={lat},{lon}"
+maps_url = f"https://www.google.com/maps?q={lat},{lon}"
 
-st.markdown(f"[Open Google Maps]({maps_link})")
+st.markdown(f"[🌍 Open in Google Maps]({maps_url})")
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ==========================================
+# NEARBY HELP CENTERS
+# ==========================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+st.header("🏥 Nearby Help Centers")
+
+if st.button("FIND NEARBY HELP"):
+
+    police = "https://www.google.com/maps/search/police+station+near+me/"
+    hospital = "https://www.google.com/maps/search/hospital+near+me/"
+
+    st.success("Nearby Help Centers Found")
+
+    st.markdown(f"[🚓 Nearby Police Stations]({police})")
+    st.markdown(f"[🏥 Nearby Hospitals]({hospital})")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -368,6 +347,6 @@ st.markdown("---")
 
 st.markdown("""
 <center>
-🚨 Women Safety App | Hackathon Project
+🚨 Women Safety App | Streamlit Hackathon Project
 </center>
 """, unsafe_allow_html=True)
